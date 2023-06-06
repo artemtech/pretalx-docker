@@ -19,17 +19,15 @@ RUN apt-get update && \
 
 ENV LC_ALL=C.UTF-8
 
+RUN pip3 install -U pip setuptools wheel typing && \
+    pip3 install django-redis pylibmc mysqlclient psycopg2-binary redis==3.3.1 && \
+    pip3 install gunicorn
 
 COPY pretalx/src /pretalx/src
 COPY deployment/docker/pretalx.bash /usr/local/bin/pretalx
 COPY deployment/docker/supervisord.conf /etc/supervisord.conf
 
-RUN pip3 install -U pip setuptools wheel typing && \
-    pip3 install -e /pretalx/src/ && \
-    pip3 install django-redis pylibmc mysqlclient psycopg2-binary redis==3.3.1 && \
-    pip3 install gunicorn
-
-
+RUN pip3 install -e /pretalx/src/
 RUN python3 -m pretalx makemigrations
 RUN python3 -m pretalx migrate && python3 -m pretalx rebuild
 
@@ -38,8 +36,6 @@ RUN chmod +x /usr/local/bin/pretalx && \
     rm -f pretalx.cfg && \
     chown -R pretalxuser:pretalxuser /pretalx /data && \
     rm -f /pretalx/src/data/.secret
-
-
 
 USER pretalxuser
 VOLUME ["/etc/pretalx", "/data"]
